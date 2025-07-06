@@ -1,0 +1,25 @@
+import json
+import urllib.request
+
+def lambda_handler(event, context):
+    webhook_url = 'https://xyz.webhook/webhookb2/a1a9d4ef-8edb-9d15-000c396a685f9dfe67066c4421f9c264-e7d8c6fbd03c/V2JiUxhMbj5dHH9Ynzh0t10s3aqpXx_DngxLXCIEXawQ81'  
+
+    for record in event['Records']:
+        sns_message = json.loads(record['Sns']['Message'])
+        
+        detail = sns_message.get("detail", {})
+        instance_id = detail.get("instance-id", "Unknown")
+        state = detail.get("state", "Unknown")
+
+        teams_message = {
+            "text": f"🚨 *EC2 State Change Detected!*\n\n🆔 Instance: `{instance_id}`\n📌 State: `{state}`"
+        }
+
+        data = json.dumps(teams_message).encode("utf-8")
+        req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
+        urllib.request.urlopen(req)
+
+    return {
+        'statusCode': 200,
+        'body': 'Message sent to Teams'
+    }
